@@ -29,9 +29,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
+          # We append the architecture to the URL with a pipe (|) per the help docs
+          $urlWithArch = "${{ inputs.installerUrl }}|${{ inputs.architecture }}"
+          
           .\wingetcreate.exe update "${{ inputs.packageId }}" `
             --version "${{ inputs.version }}" `
-            --urls "${{ inputs.installerUrl }}" `
+            --urls "$urlWithArch" `
             --token "${{ env.GITHUB_TOKEN }}" `
-            --architecture "${{ inputs.architecture }}" `
             --submit
