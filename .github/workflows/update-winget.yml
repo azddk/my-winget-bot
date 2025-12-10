@@ -13,9 +13,13 @@ on:
         description: 'Direct Download URL for the Installer'
         required: true
       architecture:
-        description: 'Architecture (x64, x86, or arm64)'
+        description: 'Architecture'
         required: true
         default: 'x64'
+      scope:
+        description: 'Scope (machine or user)'
+        required: true
+        default: 'machine'
 
 jobs:
   winget-update:
@@ -29,11 +33,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
-          # We append the architecture to the URL with a pipe (|) per the help docs
-          $urlWithArch = "${{ inputs.installerUrl }}|${{ inputs.architecture }}"
+          # Combine URL | Arch | Scope so Winget knows EXACTLY which entry to update
+          $urlComplex = "${{ inputs.installerUrl }}|${{ inputs.architecture }}|${{ inputs.scope }}"
+          
+          Write-Host "Processing: $urlComplex"
           
           .\wingetcreate.exe update "${{ inputs.packageId }}" `
             --version "${{ inputs.version }}" `
-            --urls "$urlWithArch" `
+            --urls "$urlComplex" `
             --token "${{ env.GITHUB_TOKEN }}" `
             --submit
