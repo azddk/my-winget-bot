@@ -1,0 +1,33 @@
+name: Update Winget Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      packageId:
+        description: 'Package ID (e.g., Google.Chrome)'
+        required: true
+      version:
+        description: 'New Version Number (e.g., 1.2.3)'
+        required: true
+      installerUrl:
+        description: 'Direct Download URL for the Installer (EXE/MSI)'
+        required: true
+
+jobs:
+  winget-update:
+    runs-on: windows-latest
+    steps:
+      - name: Install WingetCreate
+        run: |
+          Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+      
+      - name: Run Winget Update
+        env:
+          GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          # The pipe syntax | ensures we execute the downloaded binary directly
+          .\wingetcreate.exe update "${{ inputs.packageId }}" `
+            --version "${{ inputs.version }}" `
+            --urls "${{ inputs.installerUrl }}" `
+            --token "${{ env.GITHUB_TOKEN }}" `
+            --submit
