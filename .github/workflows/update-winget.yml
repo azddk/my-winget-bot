@@ -4,14 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       packageId:
-        description: 'Package ID (e.g., Google.Chrome)'
+        description: 'Package ID (e.g., Ubiquiti.IdentityDesktop.Enterprise)'
         required: true
       version:
-        description: 'New Version Number (e.g., 1.2.3)'
+        description: 'New Version Number (e.g., 0.90.0)'
         required: true
       installerUrl:
-        description: 'Direct Download URL for the Installer (EXE/MSI)'
+        description: 'Direct Download URL for the Installer'
         required: true
+      architecture:
+        description: 'Architecture (x64, x86, or arm64)'
+        required: true
+        default: 'x64'
 
 jobs:
   winget-update:
@@ -25,9 +29,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
-          # The pipe syntax | ensures we execute the downloaded binary directly
           .\wingetcreate.exe update "${{ inputs.packageId }}" `
             --version "${{ inputs.version }}" `
             --urls "${{ inputs.installerUrl }}" `
             --token "${{ env.GITHUB_TOKEN }}" `
+            --architecture "${{ inputs.architecture }}" `
             --submit
