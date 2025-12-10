@@ -1,3 +1,30 @@
+name: Update Winget Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      packageId:
+        description: 'Package ID (e.g., Ubiquiti.IdentityDesktop.Enterprise)'
+        required: true
+      version:
+        description: 'New Version Number (e.g., 0.90.0)'
+        required: true
+      installerUrl:
+        description: 'Direct Download URL for the Installer'
+        required: true
+      architecture:
+        description: 'Architecture (x64, x86, or arm64)'
+        required: true
+        default: 'x64'
+      scope:
+        description: 'Scope (machine or user)'
+        required: true
+        default: 'machine'
+      installerType:
+        description: 'Installer Type (exe, msi, or burn)'
+        required: true
+        default: 'exe'
+
 jobs:
   winget-update:
     runs-on: windows-latest
@@ -10,11 +37,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
-          # We append |exe to force the type to 'exe' instead of letting it auto-detect 'Burn'
-          # This matches the existing manifest strictly and usually fixes the 'Multiple matches' error.
-          $urlComplex = "${{ inputs.installerUrl }}|${{ inputs.architecture }}|${{ inputs.scope }}|exe"
+          # Construct the override string: URL | Architecture | Scope | Type
+          # This forces Winget to stop guessing and use exactly what we tell it.
+          $urlComplex = "${{ inputs.installerUrl }}|${{ inputs.architecture }}|${{ inputs.scope }}|${{ inputs.installerType }}"
           
-          Write-Host "Processing: $urlComplex"
+          Write-Host "Processing Override String: $urlComplex"
           
           .\wingetcreate.exe update "${{ inputs.packageId }}" `
             --version "${{ inputs.version }}" `
